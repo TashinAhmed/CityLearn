@@ -3,9 +3,14 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Overview: module code &mdash; CityLearn 1.2.0 documentation</title>
+  <title>Overview: module code &mdash; CityLearn 2.0b2 documentation</title>
       <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/copybutton.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/mystnb.4510f1fc1dee50b3e5859aac5469c37c29e427902b24a333a5f9fcb2f0b3ac41.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/panels-bootstrap.5fd3999ee7762ccc51105388f4a9d115.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/panels-main.c949a650a448cc0ae9fd3441c0e17fb0.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/panels-variables.06eb56fa6e07937060861dad626602ad.css" type="text/css" />
   <!--[if lt IE 9]>
     <script src="../_static/js/html5shiv.min.js"></script>
   <![endif]-->
@@ -14,6 +19,9 @@
         <script src="../_static/jquery.js"></script>
         <script src="../_static/underscore.js"></script>
         <script src="../_static/doctools.js"></script>
+        <script src="../_static/clipboard.min.js"></script>
+        <script src="../_static/copybutton.js"></script>
+        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
     <script src="../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" /> 
@@ -24,22 +32,29 @@
     <nav data-toggle="wy-nav-shift" class="wy-nav-side">
       <div class="wy-side-scroll">
         <div class="wy-side-nav-search" >
-            <a href="../index.html" class="icon icon-home"> CityLearn
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            CityLearn
           </a>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
-    <input type="text" name="q" placeholder="Search docs" />
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
     <input type="hidden" name="check_keywords" value="yes" />
     <input type="hidden" name="area" value="default" />
   </form>
 </div>
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
-              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
-<ul>
-<li class="toctree-l1"><a class="reference internal" href="../usage.html">Usage</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../environment.html">Environment</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../citylearn_challenge/years.html">CityLearn Challenge</a></li>
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../quickstart.html">QuickStart</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../overview/index.html">Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../usage/index.html">Usage</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../api/modules.html">citylearn</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../citylearn_challenge/index.html">The CityLearn Challenge</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../contributing.html">Contributing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../references.html">References</a></li>
 </ul>
 
         </div>
@@ -55,8 +70,8 @@
         <div class="rst-content">
           <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
-      <li><a href="../index.html" class="icon icon-home"></a> &raquo;</li>
-      <li>Overview: module code</li>
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Overview: module code</li>
       <li class="wy-breadcrumbs-aside">
       </li>
   </ul>
@@ -67,22 +82,23 @@
              
   <h1>All modules for which code is available</h1>
 <ul><li><a href="citylearn/agents/base.html">citylearn.agents.base</a></li>
+<li><a href="citylearn/agents/marlisa.html">citylearn.agents.marlisa</a></li>
+<li><a href="citylearn/agents/q_learning.html">citylearn.agents.q_learning</a></li>
 <li><a href="citylearn/agents/rbc.html">citylearn.agents.rbc</a></li>
 <li><a href="citylearn/agents/rlc.html">citylearn.agents.rlc</a></li>
 <li><a href="citylearn/agents/sac.html">citylearn.agents.sac</a></li>
 <li><a href="citylearn/base.html">citylearn.base</a></li>
 <li><a href="citylearn/building.html">citylearn.building</a></li>
 <li><a href="citylearn/citylearn.html">citylearn.citylearn</a></li>
-<li><a href="citylearn/citylearn_pettingzoo.html">citylearn.citylearn_pettingzoo</a></li>
 <li><a href="citylearn/cost_function.html">citylearn.cost_function</a></li>
 <li><a href="citylearn/data.html">citylearn.data</a></li>
+<li><a href="citylearn/dynamics.html">citylearn.dynamics</a></li>
 <li><a href="citylearn/energy_model.html">citylearn.energy_model</a></li>
 <li><a href="citylearn/preprocessing.html">citylearn.preprocessing</a></li>
-<li><a href="citylearn/rendering.html">citylearn.rendering</a></li>
 <li><a href="citylearn/reward_function.html">citylearn.reward_function</a></li>
 <li><a href="citylearn/rl.html">citylearn.rl</a></li>
-<li><a href="citylearn/simulator.html">citylearn.simulator</a></li>
 <li><a href="citylearn/utilities.html">citylearn.utilities</a></li>
+<li><a href="citylearn/wrappers.html">citylearn.wrappers</a></li>
 </ul>
 
            </div>

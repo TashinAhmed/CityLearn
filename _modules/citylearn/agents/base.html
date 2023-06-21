@@ -3,9 +3,14 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>citylearn.agents.base &mdash; CityLearn 1.2.0 documentation</title>
+  <title>citylearn.agents.base &mdash; CityLearn 2.0b2 documentation</title>
       <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/copybutton.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/mystnb.4510f1fc1dee50b3e5859aac5469c37c29e427902b24a333a5f9fcb2f0b3ac41.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/panels-bootstrap.5fd3999ee7762ccc51105388f4a9d115.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/panels-main.c949a650a448cc0ae9fd3441c0e17fb0.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/panels-variables.06eb56fa6e07937060861dad626602ad.css" type="text/css" />
   <!--[if lt IE 9]>
     <script src="../../../_static/js/html5shiv.min.js"></script>
   <![endif]-->
@@ -14,6 +19,9 @@
         <script src="../../../_static/jquery.js"></script>
         <script src="../../../_static/underscore.js"></script>
         <script src="../../../_static/doctools.js"></script>
+        <script src="../../../_static/clipboard.min.js"></script>
+        <script src="../../../_static/copybutton.js"></script>
+        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
     <script src="../../../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../../../genindex.html" />
     <link rel="search" title="Search" href="../../../search.html" /> 
@@ -24,22 +32,29 @@
     <nav data-toggle="wy-nav-shift" class="wy-nav-side">
       <div class="wy-side-scroll">
         <div class="wy-side-nav-search" >
-            <a href="../../../index.html" class="icon icon-home"> CityLearn
+
+          
+          
+          <a href="../../../index.html" class="icon icon-home">
+            CityLearn
           </a>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
-    <input type="text" name="q" placeholder="Search docs" />
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
     <input type="hidden" name="check_keywords" value="yes" />
     <input type="hidden" name="area" value="default" />
   </form>
 </div>
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
-              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
-<ul>
-<li class="toctree-l1"><a class="reference internal" href="../../../usage.html">Usage</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../environment.html">Environment</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../citylearn_challenge/years.html">CityLearn Challenge</a></li>
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../quickstart.html">QuickStart</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../overview/index.html">Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../usage/index.html">Usage</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../api/modules.html">citylearn</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../citylearn_challenge/index.html">The CityLearn Challenge</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../contributing.html">Contributing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../references.html">References</a></li>
 </ul>
 
         </div>
@@ -55,9 +70,9 @@
         <div class="rst-content">
           <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
-      <li><a href="../../../index.html" class="icon icon-home"></a> &raquo;</li>
-          <li><a href="../../index.html">Module code</a> &raquo;</li>
-      <li>citylearn.agents.base</li>
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">citylearn.agents.base</li>
       <li class="wy-breadcrumbs-aside">
       </li>
   </ul>
@@ -68,77 +83,242 @@
              
   <h1>Source code for citylearn.agents.base</h1><div class="highlight"><pre>
 <span></span><span class="kn">import</span> <span class="nn">inspect</span>
-<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">List</span>
+<span class="kn">import</span> <span class="nn">logging</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">from</span> <span class="nn">pathlib</span> <span class="kn">import</span> <span class="n">Path</span>
+<span class="kn">import</span> <span class="nn">pickle</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Mapping</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">,</span> <span class="n">Union</span>
 <span class="kn">from</span> <span class="nn">gym</span> <span class="kn">import</span> <span class="n">spaces</span>
 <span class="kn">from</span> <span class="nn">citylearn.base</span> <span class="kn">import</span> <span class="n">Environment</span>
+<span class="kn">from</span> <span class="nn">citylearn.citylearn</span> <span class="kn">import</span> <span class="n">CityLearnEnv</span>
+
+<span class="n">LOGGER</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">()</span>
+<span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="s1">&#39;matplotlib.font_manager&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">disabled</span> <span class="o">=</span> <span class="kc">True</span>
+<span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="s1">&#39;matplotlib.pyplot&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">disabled</span> <span class="o">=</span> <span class="kc">True</span>
 
 <div class="viewcode-block" id="Agent"><a class="viewcode-back" href="../../../api/citylearn.agents.base.html#citylearn.agents.base.Agent">[docs]</a><span class="k">class</span> <span class="nc">Agent</span><span class="p">(</span><span class="n">Environment</span><span class="p">):</span>
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">action_space</span><span class="p">:</span> <span class="n">spaces</span><span class="o">.</span><span class="n">Box</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-        <span class="sa">r</span><span class="sd">&quot;&quot;&quot;Initialize `Agent`.</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Base agent class.</span>
 
-<span class="sd">        Parameters</span>
-<span class="sd">        ----------</span>
-<span class="sd">        action_space : spaces.Box</span>
-<span class="sd">            Format of valid actions.</span>
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    env : CityLearnEnv</span>
+<span class="sd">        CityLearn environment.</span>
 
-<span class="sd">        Other Parameters</span>
-<span class="sd">        ----------------</span>
-<span class="sd">        **kwargs : dict</span>
-<span class="sd">            Other keyword arguments used to initialize super class.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="sd">    Other Parameters</span>
+<span class="sd">    ----------------</span>
+<span class="sd">    **kwargs : dict</span>
+<span class="sd">        Other keyword arguments used to initialize super class.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">env</span><span class="p">:</span> <span class="n">CityLearnEnv</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">env</span> <span class="o">=</span> <span class="n">env</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">observation_names</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">env</span><span class="o">.</span><span class="n">observation_names</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">observation_space</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">env</span><span class="o">.</span><span class="n">observation_space</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">action_space</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">env</span><span class="o">.</span><span class="n">action_space</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">building_information</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">env</span><span class="o">.</span><span class="n">get_building_information</span><span class="p">()</span>
 
         <span class="n">arg_spec</span> <span class="o">=</span> <span class="n">inspect</span><span class="o">.</span><span class="n">getfullargspec</span><span class="p">(</span><span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">)</span>
         <span class="n">kwargs</span> <span class="o">=</span> <span class="p">{</span>
             <span class="n">key</span><span class="p">:</span><span class="n">value</span> <span class="k">for</span> <span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">items</span><span class="p">()</span>
             <span class="k">if</span> <span class="p">(</span><span class="n">key</span> <span class="ow">in</span> <span class="n">arg_spec</span><span class="o">.</span><span class="n">args</span> <span class="ow">or</span> <span class="p">(</span><span class="n">arg_spec</span><span class="o">.</span><span class="n">varkw</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">))</span>
+            
         <span class="p">}</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">action_space</span> <span class="o">=</span> <span class="n">action_space</span>
 
     <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">action_space</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">spaces</span><span class="o">.</span><span class="n">Box</span><span class="p">:</span>
-        <span class="sd">&quot;&quot;&quot;Format of valid actions.&quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">observation_names</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Names of active observations that can be used to map observation values.&quot;&quot;&quot;</span>
+
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__observation_names</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">observation_space</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">spaces</span><span class="o">.</span><span class="n">Box</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Format of valid observations.&quot;&quot;&quot;</span>
+
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__observation_space</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">action_space</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">spaces</span><span class="o">.</span><span class="n">Box</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Format of valid actions.&quot;&quot;&quot;</span>
 
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__action_space</span>
 
     <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">action_dimension</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
-        <span class="sd">&quot;&quot;&quot;Number of returned actions.&quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">building_information</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">Mapping</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Building metadata.&quot;&quot;&quot;</span>
 
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">action_space</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__building_information</span>
 
     <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">actions</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="n">Any</span><span class="p">]]:</span>
-        <span class="sd">&quot;&quot;&quot;Action history/time series.&quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">action_dimension</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="nb">int</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Number of returned actions.&quot;&quot;&quot;</span>
+
+        <span class="k">return</span> <span class="p">[</span><span class="n">s</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">action_space</span><span class="p">]</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">actions</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="n">Any</span><span class="p">]]]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Action history/time series.&quot;&quot;&quot;</span>
 
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__actions</span>
 
+    <span class="nd">@observation_names</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span> <span class="nf">observation_names</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">observation_names</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]]):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__observation_names</span> <span class="o">=</span> <span class="n">observation_names</span>
+
+    <span class="nd">@observation_space</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span> <span class="nf">observation_space</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">observation_space</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">spaces</span><span class="o">.</span><span class="n">Box</span><span class="p">]):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__observation_space</span> <span class="o">=</span> <span class="n">observation_space</span>
+
     <span class="nd">@action_space</span><span class="o">.</span><span class="n">setter</span>
-    <span class="k">def</span> <span class="nf">action_space</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">action_space</span><span class="p">:</span> <span class="n">spaces</span><span class="o">.</span><span class="n">Box</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">action_space</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">action_space</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">spaces</span><span class="o">.</span><span class="n">Box</span><span class="p">]):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">__action_space</span> <span class="o">=</span> <span class="n">action_space</span>
 
-    <span class="nd">@actions</span><span class="o">.</span><span class="n">setter</span>
-    <span class="k">def</span> <span class="nf">actions</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">actions</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Any</span><span class="p">]):</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">__actions</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">time_step</span><span class="p">]</span> <span class="o">=</span> <span class="n">actions</span>
+    <span class="nd">@building_information</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span> <span class="nf">building_information</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">building_information</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Mapping</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__building_information</span> <span class="o">=</span> <span class="n">building_information</span>
 
-<div class="viewcode-block" id="Agent.select_actions"><a class="viewcode-back" href="../../../api/citylearn.agents.base.html#citylearn.agents.base.Agent.select_actions">[docs]</a>    <span class="k">def</span> <span class="nf">select_actions</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="nb">float</span><span class="p">]:</span>
-        <span class="sd">&quot;&quot;&quot;Provide actions for current time step.</span>
+    <span class="nd">@actions</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span> <span class="nf">actions</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">actions</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="n">Any</span><span class="p">]]):</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">action_space</span><span class="p">)):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">__actions</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="bp">self</span><span class="o">.</span><span class="n">time_step</span><span class="p">]</span> <span class="o">=</span> <span class="n">actions</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+
+<div class="viewcode-block" id="Agent.learn"><a class="viewcode-back" href="../../../api/citylearn.agents.base.html#citylearn.agents.base.Agent.learn">[docs]</a>    <span class="k">def</span> <span class="nf">learn</span><span class="p">(</span>
+            <span class="bp">self</span><span class="p">,</span> <span class="n">episodes</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">keep_env_history</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">env_history_directory</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Path</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> 
+            <span class="n">deterministic</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">deterministic_finish</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">logging_level</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Train agent.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        episodes: int, default: 1</span>
+<span class="sd">            Number of training episode greater :math:`\ge 1`.</span>
+<span class="sd">        keep_env_history: bool, default: False</span>
+<span class="sd">            Indicator to store environment state at the end of each episode.</span>
+<span class="sd">        env_history_directory: Union[str, Path], optional</span>
+<span class="sd">            Directory to save environment history to.</span>
+<span class="sd">        deterministic: bool, default: False</span>
+<span class="sd">            Indicator to take deterministic actions i.e. strictly exploit the learned policy.</span>
+<span class="sd">        deterministic_finish: bool, default: False</span>
+<span class="sd">            Indicator to take deterministic actions in the final episode.</span>
+<span class="sd">        logging_level: int, default: 30</span>
+<span class="sd">            Logging level where increasing the number silences lower level information.      </span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        
+        <span class="n">episodes</span> <span class="o">=</span> <span class="mi">1</span> <span class="k">if</span> <span class="n">episodes</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">episodes</span>
+        <span class="n">keep_env_history</span> <span class="o">=</span> <span class="kc">False</span> <span class="k">if</span> <span class="n">keep_env_history</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">keep_env_history</span>
+        <span class="n">deterministic_finish</span> <span class="o">=</span> <span class="kc">False</span> <span class="k">if</span> <span class="n">deterministic_finish</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">deterministic_finish</span>
+        <span class="n">deterministic</span> <span class="o">=</span> <span class="kc">False</span> <span class="k">if</span> <span class="n">deterministic</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">deterministic</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__set_logger</span><span class="p">(</span><span class="n">logging_level</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">keep_env_history</span><span class="p">:</span>
+            <span class="n">env_history_directory</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;citylearn_learning_</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">env</span><span class="o">.</span><span class="n">uid</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span> <span class="k">if</span> <span class="n">env_history_directory</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">env_history_directory</span>
+            <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="n">env_history_directory</span><span class="p">,</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+            
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">pass</span>
+
+        <span class="k">for</span> <span class="n">episode</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">episodes</span><span class="p">):</span>
+            <span class="n">deterministic</span> <span class="o">=</span> <span class="n">deterministic</span> <span class="ow">or</span> <span class="p">(</span><span class="n">deterministic_finish</span> <span class="ow">and</span> <span class="n">episode</span> <span class="o">&gt;=</span> <span class="n">episodes</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span>
+            <span class="n">observations</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">env</span><span class="o">.</span><span class="n">reset</span><span class="p">()</span>
+
+            <span class="k">while</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">env</span><span class="o">.</span><span class="n">done</span><span class="p">:</span>
+                <span class="n">actions</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">observations</span><span class="p">,</span> <span class="n">deterministic</span><span class="o">=</span><span class="n">deterministic</span><span class="p">)</span>
+
+                <span class="c1"># apply actions to citylearn_env</span>
+                <span class="n">next_observations</span><span class="p">,</span> <span class="n">rewards</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">env</span><span class="o">.</span><span class="n">step</span><span class="p">(</span><span class="n">actions</span><span class="p">)</span>
+
+                <span class="c1"># update</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="n">deterministic</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">observations</span><span class="p">,</span> <span class="n">actions</span><span class="p">,</span> <span class="n">rewards</span><span class="p">,</span> <span class="n">next_observations</span><span class="p">,</span> <span class="n">done</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">env</span><span class="o">.</span><span class="n">done</span><span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="k">pass</span>
+
+                <span class="n">observations</span> <span class="o">=</span> <span class="p">[</span><span class="n">o</span> <span class="k">for</span> <span class="n">o</span> <span class="ow">in</span> <span class="n">next_observations</span><span class="p">]</span>
+
+                <span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span>
+                    <span class="sa">f</span><span class="s1">&#39;Time step: </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">env</span><span class="o">.</span><span class="n">time_step</span><span class="si">}</span><span class="s1">/</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">env</span><span class="o">.</span><span class="n">time_steps</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="mi">1</span><span class="si">}</span><span class="s1">,&#39;</span>\
+                        <span class="sa">f</span><span class="s1">&#39; Episode: </span><span class="si">{</span><span class="n">episode</span><span class="si">}</span><span class="s1">/</span><span class="si">{</span><span class="n">episodes</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="mi">1</span><span class="si">}</span><span class="s1">,&#39;</span>\
+                            <span class="sa">f</span><span class="s1">&#39; Actions: </span><span class="si">{</span><span class="n">actions</span><span class="si">}</span><span class="s1">,&#39;</span>\
+                                <span class="sa">f</span><span class="s1">&#39; Rewards: </span><span class="si">{</span><span class="n">rewards</span><span class="si">}</span><span class="s1">&#39;</span>
+                <span class="p">)</span>
+
+            <span class="c1"># store episode&#39;s env to disk</span>
+            <span class="k">if</span> <span class="n">keep_env_history</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">__save_env</span><span class="p">(</span><span class="n">episode</span><span class="p">,</span> <span class="n">env_history_directory</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">pass</span></div>
+
+<div class="viewcode-block" id="Agent.get_env_history"><a class="viewcode-back" href="../../../api/citylearn.agents.base.html#citylearn.agents.base.Agent.get_env_history">[docs]</a>    <span class="k">def</span> <span class="nf">get_env_history</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">directory</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Path</span><span class="p">],</span> <span class="n">episodes</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">CityLearnEnv</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return tuple of :py:class:`citylearn.citylearn.CityLearnEnv` objects at terminal point for simulated episodes.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        directory: Union[str, Path]</span>
+<span class="sd">            Directory path where :py:class:`citylearn.citylearn.CityLearnEnv` pickled files are stored.</span>
+<span class="sd">        episodes: List[int], optional</span>
+<span class="sd">            Episodes whose environment should be returned. If None, all environments for all episodes</span>
+<span class="sd">            are returned.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        env_history: Tuple[CityLearnEnv]</span>
+<span class="sd">            :py:class:`citylearn.citylearn.CityLearnEnv` objects.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        
+        <span class="n">env_history</span> <span class="o">=</span> <span class="p">()</span>
+        <span class="n">episodes</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">([</span>
+            <span class="nb">int</span><span class="p">(</span><span class="n">f</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">directory</span><span class="p">)[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;.&#39;</span><span class="p">)[</span><span class="mi">0</span><span class="p">])</span> <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">os</span><span class="o">.</span><span class="n">listdir</span><span class="p">(</span><span class="n">directory</span><span class="p">)</span> <span class="k">if</span> <span class="n">f</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s1">&#39;.pkl&#39;</span><span class="p">)</span>
+        <span class="p">])</span> <span class="k">if</span> <span class="n">episodes</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">episodes</span>
+
+        <span class="k">for</span> <span class="n">episode</span> <span class="ow">in</span> <span class="n">episodes</span><span class="p">:</span>
+            <span class="n">filepath</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">directory</span><span class="p">,</span> <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="nb">int</span><span class="p">(</span><span class="n">episode</span><span class="p">)</span><span class="si">}</span><span class="s1">.pkl&#39;</span><span class="p">)</span>
+
+            <span class="k">with</span> <span class="p">(</span><span class="nb">open</span><span class="p">(</span><span class="n">filepath</span><span class="p">,</span> <span class="s1">&#39;rb&#39;</span><span class="p">))</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+                <span class="n">env_history</span> <span class="o">+=</span> <span class="p">(</span><span class="n">pickle</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">f</span><span class="p">),)</span>
+
+        <span class="k">return</span> <span class="n">env_history</span></div>
+
+    <span class="k">def</span> <span class="nf">__save_env</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">episode</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">directory</span><span class="p">:</span> <span class="n">Path</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Save current environment state to pickle file.&quot;&quot;&quot;</span>
+
+        <span class="n">filepath</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">directory</span><span class="p">,</span> <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="nb">int</span><span class="p">(</span><span class="n">episode</span><span class="p">)</span><span class="si">}</span><span class="s1">.pkl&#39;</span><span class="p">)</span>
+
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">filepath</span><span class="p">,</span> <span class="s1">&#39;wb&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+            <span class="n">pickle</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">env</span><span class="p">,</span> <span class="n">f</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="Agent.predict"><a class="viewcode-back" href="../../../api/citylearn.agents.base.html#citylearn.agents.base.Agent.predict">[docs]</a>    <span class="k">def</span> <span class="nf">predict</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">observations</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">float</span><span class="p">]],</span> <span class="n">deterministic</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">float</span><span class="p">]]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Provide actions for current time step.</span>
 
 <span class="sd">        Return randomly sampled actions from `action_space`.</span>
 <span class="sd">        </span>
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        observations: List[List[float]]</span>
+<span class="sd">            Environment observations</span>
+<span class="sd">        deterministic: bool, default: False</span>
+<span class="sd">            Wether to return purely exploitatative deterministic actions.</span>
+
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
-<span class="sd">        actions: List[float]</span>
+<span class="sd">        actions: List[List[float]]</span>
 <span class="sd">            Action values</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-
-        <span class="n">actions</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">action_space</span><span class="o">.</span><span class="n">sample</span><span class="p">())</span>
+        
+        <span class="n">actions</span> <span class="o">=</span> <span class="p">[</span><span class="nb">list</span><span class="p">(</span><span class="n">s</span><span class="o">.</span><span class="n">sample</span><span class="p">())</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">action_space</span><span class="p">]</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">actions</span> <span class="o">=</span> <span class="n">actions</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">next_time_step</span><span class="p">()</span>
         <span class="k">return</span> <span class="n">actions</span></div>
+    
+    <span class="k">def</span> <span class="nf">__set_logger</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">logging_level</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Set logging level.&quot;&quot;&quot;</span>
 
-<div class="viewcode-block" id="Agent.add_to_buffer"><a class="viewcode-back" href="../../../api/citylearn.agents.base.html#citylearn.agents.base.Agent.add_to_buffer">[docs]</a>    <span class="k">def</span> <span class="nf">add_to_buffer</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Update replay buffer</span>
+        <span class="n">logging_level</span> <span class="o">=</span> <span class="mi">30</span> <span class="k">if</span> <span class="n">logging_level</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">logging_level</span>
+        <span class="k">assert</span> <span class="n">logging_level</span> <span class="o">&gt;=</span> <span class="mi">0</span><span class="p">,</span> <span class="s1">&#39;logging_level must be &gt;= 0&#39;</span>
+        <span class="n">LOGGER</span><span class="o">.</span><span class="n">setLevel</span><span class="p">(</span><span class="n">logging_level</span><span class="p">)</span>
+
+<div class="viewcode-block" id="Agent.update"><a class="viewcode-back" href="../../../api/citylearn.agents.base.html#citylearn.agents.base.Agent.update">[docs]</a>    <span class="k">def</span> <span class="nf">update</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Update replay buffer and networks.</span>
 <span class="sd">        </span>
 <span class="sd">        Notes</span>
 <span class="sd">        -----</span>
@@ -149,11 +329,13 @@
 
 <div class="viewcode-block" id="Agent.next_time_step"><a class="viewcode-back" href="../../../api/citylearn.agents.base.html#citylearn.agents.base.Agent.next_time_step">[docs]</a>    <span class="k">def</span> <span class="nf">next_time_step</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">next_time_step</span><span class="p">()</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">__actions</span><span class="o">.</span><span class="n">append</span><span class="p">([])</span></div>
+
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">action_space</span><span class="p">)):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">__actions</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">([])</span></div>
 
 <div class="viewcode-block" id="Agent.reset"><a class="viewcode-back" href="../../../api/citylearn.agents.base.html#citylearn.agents.base.Agent.reset">[docs]</a>    <span class="k">def</span> <span class="nf">reset</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">reset</span><span class="p">()</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">__actions</span> <span class="o">=</span> <span class="p">[[]]</span></div></div>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__actions</span> <span class="o">=</span> <span class="p">[[[]]</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">action_space</span><span class="p">]</span></div></div>
 </pre></div>
 
            </div>
